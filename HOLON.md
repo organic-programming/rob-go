@@ -13,12 +13,8 @@ born: "2026-03-02"
 parents: []
 reproduction: "assisted"
 
-# Optional
-aliases: ["rob"]
-
 # Metadata
 generated_by: "codex"
-lang: "go"
 proto_status: defined
 ---
 

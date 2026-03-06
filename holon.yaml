@@ -1,0 +1,12 @@
+schema: holon/v0
+kind: wrapper
+build:
+  runner: go-module
+  main: ./cmd/rob-go
+requires:
+  commands: [go]
+  files: [go.mod]
+delegates:
+  commands: [go]
+artifacts:
+  binary: .op/build/bin/rob-go
