@@ -1,4 +1,36 @@
+# ── Identity ──────────────────────────────────────────
 schema: holon/v0
+uuid: "d4e5f6a7-8b9c-0d1e-2f3a-4b5c6d7e8f9a"
+given_name: Rob
+family_name: Go
+motto: Build anything, test everything.
+composer: B. ALTER
+clade: deterministic/toolchain
+status: draft
+born: "2026-03-02"
+
+# ── Lineage ───────────────────────────────────────────
+parents: []
+reproduction: assisted
+generated_by: codex
+
+# ── Description ───────────────────────────────────────
+description: |
+  The foundational toolchain holon of Organic Programming. Rob wraps the
+  `go` command AND Go's standard analysis packages, exposing the full
+  power of the Go ecosystem as gRPC RPCs.
+  
+  Two execution modes:
+  - **Exec**: subprocess calls for orchestration (build, test, run, mod, ...)
+  - **Library**: in-process calls for analysis (parse, type-check, format, vet, ...)
+  
+  Every OP holon that works with Go code goes through Rob.
+
+# ── Contract ──────────────────────────────────────────
+contract:
+  service: go.v1.GoService
+
+# ── Operational ───────────────────────────────────────
 kind: wrapper
 build:
   runner: go-module
@@ -9,4 +41,4 @@ requires:
 delegates:
   commands: [go]
 artifacts:
-  binary: .op/build/bin/rob-go
+  binary: rob-go
