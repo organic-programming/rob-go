@@ -4,55 +4,105 @@ package go.v1;
 option go_package = "github.com/organic-programming/rob-go/gen/go/go/v1;gov1";
 
 service GoService {
-
   // ---- Exec mode: orchestration via subprocess ----
 
+  // Build runs `go build` in the requested workspace.
+  // @example {"args":["./cmd/rob-go"],"workdir":"."}
   rpc Build(GoCommandRequest) returns (GoCommandResponse);
+
+  // Test runs `go test` and can optionally return structured JSON events.
+  // @example {"args":["./...","-race"],"workdir":".","json_output":true,"cover":true,"cover_profile":"coverage.out"}
   rpc Test(TestRequest) returns (TestResponse);
+
+  // Run executes `go run` with the provided package or files.
+  // @example {"args":["./cmd/demo"],"workdir":"."}
   rpc Run(GoCommandRequest) returns (GoCommandResponse);
+
+  // Mod dispatches to `go mod`.
+  // @example {"args":["tidy"],"workdir":"."}
   rpc Mod(GoCommandRequest) returns (GoCommandResponse);
+
+  // Get dispatches to `go get`.
+  // @example {"args":["golang.org/x/tools/cmd/stringer"],"workdir":"."}
   rpc Get(GoCommandRequest) returns (GoCommandResponse);
+
+  // Install dispatches to `go install`.
+  // @example {"args":["./cmd/rob-go"],"workdir":"."}
   rpc Install(GoCommandRequest) returns (GoCommandResponse);
+
+  // Generate dispatches to `go generate`.
+  // @example {"args":["./..."],"workdir":"."}
   rpc Generate(GoCommandRequest) returns (GoCommandResponse);
+
+  // Clean dispatches to `go clean`.
+  // @example {"args":["-cache"],"workdir":"."}
   rpc Clean(GoCommandRequest) returns (GoCommandResponse);
+
+  // Work dispatches to `go work`.
+  // @example {"args":["sync"],"workdir":"."}
   rpc Work(GoCommandRequest) returns (GoCommandResponse);
+
+  // Tool dispatches to `go tool`.
+  // @example {"args":["pprof","cpu.out"],"workdir":"."}
   rpc Tool(GoCommandRequest) returns (GoCommandResponse);
+
+  // Fix dispatches to `go fix`.
+  // @example {"args":["./..."],"workdir":"."}
   rpc Fix(GoCommandRequest) returns (GoCommandResponse);
 
   // ---- Library mode: in-process analysis ----
 
   // Format Go source (go/format — no subprocess).
+  // @example {"source":"package main\\n\\nfunc main(){println(\\\"hi\\\")}\\n","filename":"main.go"}
   rpc Format(FormatRequest) returns (FormatResponse);
 
   // Parse Go source into AST and return structural info.
+  // @example {"source":"package main\\n\\nfunc main() {}\\n","filename":"main.go","with_comments":true}
   rpc Parse(ParseRequest) returns (ParseResponse);
 
   // Type-check a package and return diagnostics.
+  // @example {"patterns":["./..."],"workdir":"."}
   rpc TypeCheck(TypeCheckRequest) returns (TypeCheckResponse);
 
   // Run static analysis (go vet + custom analyzers).
+  // @example {"patterns":["./..."],"workdir":".","analyzers":["printf"]}
   rpc Analyze(AnalyzeRequest) returns (AnalyzeResponse);
 
   // Load package metadata and dependency graph.
+  // @example {"patterns":["./..."],"workdir":".","with_deps":true}
   rpc LoadPackages(LoadPackagesRequest) returns (LoadPackagesResponse);
 
   // Extract documentation from Go packages.
+  // @example {"pattern":"./internal/service","workdir":"."}
   rpc Doc(DocRequest) returns (DocResponse);
 
   // Print Go environment.
+  // @example {"args":["GOMOD","GOWORK"],"workdir":"."}
   rpc Env(GoCommandRequest) returns (GoCommandResponse);
 
   // Print Go version + platform info.
+  // @example {}
   rpc Version(VersionRequest) returns (VersionResponse);
 }
 
 // ---- Exec mode messages ----
 
 message GoCommandRequest {
+  // Arguments passed after the selected `go` subcommand.
+  // @example ["./cmd/rob-go"]
   repeated string args = 1;
+
+  // Working directory where the command runs.
+  // @example "."
   string workdir = 2;
-  repeated string env = 3; // "KEY=VALUE" format
-  int32 timeout_s = 4; // 0 = no timeout
+
+  // Environment variables in `KEY=VALUE` format.
+  // @example ["GOFLAGS=-mod=readonly"]
+  repeated string env = 3;
+
+  // Timeout in seconds. Use 0 to disable the timeout.
+  // @example 30
+  int32 timeout_s = 4;
 }
 
 message GoCommandResponse {
@@ -63,12 +113,32 @@ message GoCommandResponse {
 }
 
 message TestRequest {
-  repeated string args = 1; // e.g. ["./...", "-v", "-race"]
+  // Arguments passed after `go test`.
+  // @example ["./...","-race"]
+  repeated string args = 1;
+
+  // Working directory where tests run.
+  // @example "."
   string workdir = 2;
+
+  // Environment variables in `KEY=VALUE` format.
+  // @example ["CGO_ENABLED=1"]
   repeated string env = 3;
+
+  // Timeout in seconds. Use 0 to disable the timeout.
+  // @example 120
   int32 timeout_s = 4;
-  bool json_output = 5; // Force -json for structured parsing
+
+  // Force `go test -json` for structured event parsing.
+  // @example true
+  bool json_output = 5;
+
+  // Enable coverage collection.
+  // @example true
   bool cover = 6;
+
+  // Coverage profile path written by `go test`.
+  // @example "coverage.out"
   string cover_profile = 7;
 }
 
@@ -96,8 +166,14 @@ message TestEvent {
 // ---- Library mode messages ----
 
 message FormatRequest {
-  string source = 1; // Go source code text
-  string filename = 2; // For error messages
+  // Go source code to format.
+  // @required
+  // @example "package main\\n\\nfunc main(){println(\\\"hi\\\")}\\n"
+  string source = 1;
+
+  // Logical filename used in diagnostics.
+  // @example "main.go"
+  string filename = 2;
 }
 
 message FormatResponse {
@@ -107,9 +183,18 @@ message FormatResponse {
 }
 
 message ParseRequest {
+  // Go source code to parse.
+  // @required
+  // @example "package main\\n\\nfunc main() {}\\n"
   string source = 1;
+
+  // Logical filename used in diagnostics.
+  // @example "main.go"
   string filename = 2;
-  bool with_comments = 3; // Include comments in AST
+
+  // Include comments in the parsed AST output.
+  // @example true
+  bool with_comments = 3;
 }
 
 message ParseResponse {
@@ -131,8 +216,17 @@ message Declaration {
 }
 
 message TypeCheckRequest {
-  repeated string patterns = 1; // Package patterns (e.g. "./...")
+  // Package patterns to type-check.
+  // @required
+  // @example ["./..."]
+  repeated string patterns = 1;
+
+  // Working directory used to resolve the package patterns.
+  // @example "."
   string workdir = 2;
+
+  // Environment variables in `KEY=VALUE` format.
+  // @example ["GOOS=linux"]
   repeated string env = 3;
 }
 
@@ -152,10 +246,22 @@ message Diagnostic {
 }
 
 message AnalyzeRequest {
-  repeated string patterns = 1; // Package patterns
+  // Package patterns to analyze.
+  // @required
+  // @example ["./..."]
+  repeated string patterns = 1;
+
+  // Working directory used to resolve the package patterns.
+  // @example "."
   string workdir = 2;
+
+  // Environment variables in `KEY=VALUE` format.
+  // @example ["GOFLAGS=-tags=integration"]
   repeated string env = 3;
-  repeated string analyzers = 4; // Analyzer names (empty = all default vet analyzers)
+
+  // Analyzer names. Leave empty to run the default vet analyzer set.
+  // @example ["printf"]
+  repeated string analyzers = 4;
 }
 
 message AnalyzeResponse {
@@ -164,10 +270,22 @@ message AnalyzeResponse {
 }
 
 message LoadPackagesRequest {
+  // Package patterns to load.
+  // @required
+  // @example ["./..."]
   repeated string patterns = 1;
+
+  // Working directory used to resolve the package patterns.
+  // @example "."
   string workdir = 2;
+
+  // Environment variables in `KEY=VALUE` format.
+  // @example ["GOOS=darwin"]
   repeated string env = 3;
-  bool with_deps = 4; // Load transitive dependencies
+
+  // Load transitive dependencies in addition to direct packages.
+  // @example true
+  bool with_deps = 4;
 }
 
 message LoadPackagesResponse {
@@ -184,7 +302,13 @@ message PackageInfo {
 }
 
 message DocRequest {
-  string pattern = 1; // Package pattern or symbol
+  // Package pattern or symbol to document.
+  // @required
+  // @example "./internal/service"
+  string pattern = 1;
+
+  // Working directory used to resolve the pattern.
+  // @example "."
   string workdir = 2;
 }
 

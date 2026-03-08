@@ -25,6 +25,23 @@ description: |
   - **Library**: in-process calls for analysis (parse, type-check, format, vet, ...)
   
   Every OP holon that works with Go code goes through Rob.
+skills:
+  - name: prepare-release
+    description: Prepare a Go workspace for release with formatting, analysis, tests, and a final build.
+    when: User wants a module cleaned up, validated, and ready to ship.
+    steps:
+      - Format changed source buffers with `Format`
+      - Run vet-style diagnostics across `./...` with `Analyze`
+      - Execute the full suite with `Test`
+      - Produce the final artifact with `Build`
+  - name: lint-and-fix
+    description: Surface diagnostics, apply safe Go toolchain fixes, and re-run verification.
+    when: User wants a fast maintenance loop on an existing Go codebase.
+    steps:
+      - Inspect parser or compiler issues with `Parse` or `TypeCheck`
+      - Run analyzers with `Analyze`
+      - Apply Go toolchain rewrites with `Fix`
+      - Re-run `Test` to confirm the cleanup
 
 # ── Contract ──────────────────────────────────────────
 contract:
